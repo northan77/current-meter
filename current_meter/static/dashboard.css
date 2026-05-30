@@ -1,0 +1,96 @@
+:root {
+  color-scheme: dark;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #101418;
+  color: #e8eef2;
+}
+
+body {
+  margin: 0;
+  padding: 24px;
+  background: #101418;
+}
+
+h1 {
+  margin: 0 0 20px 0;
+  font-size: 30px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  max-width: 1220px;
+}
+
+.card {
+  background: #182028;
+  border: 1px solid #2d3a45;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.label {
+  color: #96a6b3;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.small {
+  font-size: 15px;
+  color: #b8c3cc;
+}
+
+.status-ok {
+  color: #69d487;
+}
+
+.status-warning {
+  color: #ffd166;
+}
+
+.status-overload {
+  color: #ff6b6b;
+}
+
+.status-offline {
+  color: #ff6b6b;
+}
+
+.status-recovering {
+  color: #ffd166;
+}
+
+.status-error {
+  color: #ff6b6b;
+}
+
+.actions {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+a,
+button {
+  background: #24313d;
+  color: #e8eef2;
+  border: 1px solid #3b4b59;
+  border-radius: 10px;
+  padding: 10px 14px;
+  text-decoration: none;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+a:hover,
+button:hover {
+  background: #304253;
+}

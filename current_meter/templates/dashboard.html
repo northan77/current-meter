@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Current Meter</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body>
+  <h1>Current Meter</h1>
+
+  <div class="grid">
+    <div class="card"><div class="label">Current</div><div id="current" class="value">...</div></div>
+    <div class="card"><div class="label">Power</div><div id="power" class="value">...</div></div>
+    <div class="card"><div class="label">Bus voltage</div><div id="bus" class="value">...</div></div>
+    <div class="card"><div class="label">Shunt voltage</div><div id="shunt" class="value">...</div></div>
+    <div class="card"><div class="label">Average current</div><div id="avg" class="value">...</div></div>
+    <div class="card"><div class="label">Rolling average</div><div id="rolling" class="value">...</div></div>
+    <div class="card"><div class="label">Min current</div><div id="min" class="value">...</div></div>
+    <div class="card"><div class="label">Max current</div><div id="max" class="value">...</div></div>
+    <div class="card"><div class="label">Used capacity</div><div id="used" class="value">...</div><div id="expected" class="small"></div></div>
+    <div class="card"><div class="label">Remaining capacity</div><div id="remaining" class="value">...</div></div>
+    <div class="card"><div class="label">Remaining capacity</div><div id="remainingPct" class="value">...</div></div>
+    <div class="card"><div class="label">Runtime elapsed</div><div id="elapsed" class="value">...</div></div>
+    <div class="card"><div class="label">Runtime remaining</div><div id="runtimeRemaining" class="value">...</div></div>
+    <div class="card"><div class="label">Estimated total runtime</div><div id="runtimeTotal" class="value">...</div></div>
+    <div class="card"><div class="label">Energy</div><div id="wh" class="value">...</div></div>
+    <div class="card"><div class="label">Temperature</div><div id="temp" class="value">...</div></div>
+    <div class="card"><div class="label">Status</div><div id="status" class="value">...</div><div id="detail" class="small"></div></div>
+  </div>
+
+  <div class="actions">
+    <button onclick="resetRun()">Reset run stats</button>
+    <a href="/download/csv">Download CSV</a>
+  </div>
+
+  <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</body>
+</html>
