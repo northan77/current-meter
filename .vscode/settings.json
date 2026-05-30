@@ -1,0 +1,10 @@
+{
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        "match": "\\.py$|\\.md$|\\.yaml$|\\.json$|\\.sh$",
+        "cmd": "bash /home/tim/Projects/current-meter/autosync.sh"
+      }
+    ]
+  }
+}
