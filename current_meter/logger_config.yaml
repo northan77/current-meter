@@ -2,6 +2,9 @@ logging:
   csv_path: logs/current_meter.csv
   sample_rate_hz: 2
 
+battery:
+  expected_capacity_mah: 400
+
 limits:
   warning_current_a: 8.0
   overload_current_a: 10.0
