@@ -10,10 +10,15 @@ class Measurement:
     """Single INA228 measurement sample used by the Phase 1 logger."""
 
     timestamp_utc: str
+    elapsed_s: float
     bus_v: float
     shunt_v: float
     current_a: float
+    current_avg_a: float
     power_w: float
+    power_avg_w: float
+    charge_mah: float
+    energy_wh: float
     die_temp_c: float
     status: str
     overload: bool
@@ -25,6 +30,11 @@ class Measurement:
         sample: dict[str, float],
         max_current_a: float,
         warning_current_a: float,
+        elapsed_s: float,
+        current_avg_a: float,
+        power_avg_w: float,
+        charge_mah: float,
+        energy_wh: float,
     ) -> "Measurement":
         current_a = float(sample["current_a_simple"])
         abs_current_a = abs(current_a)
@@ -40,10 +50,15 @@ class Measurement:
 
         return cls(
             timestamp_utc=datetime.now(timezone.utc).isoformat(),
+            elapsed_s=elapsed_s,
             bus_v=float(sample["bus_v"]),
             shunt_v=float(sample["shunt_v"]),
             current_a=current_a,
+            current_avg_a=current_avg_a,
             power_w=float(sample["power_w_simple"]),
+            power_avg_w=power_avg_w,
+            charge_mah=charge_mah,
+            energy_wh=energy_wh,
             die_temp_c=float(sample["die_temp_c"]),
             status=status,
             overload=overload,
@@ -53,10 +68,15 @@ class Measurement:
     def as_csv_row(self) -> dict[str, Any]:
         return {
             "timestamp_utc": self.timestamp_utc,
+            "elapsed_s": self.elapsed_s,
             "bus_v": self.bus_v,
             "shunt_v": self.shunt_v,
             "current_a": self.current_a,
+            "current_avg_a": self.current_avg_a,
             "power_w": self.power_w,
+            "power_avg_w": self.power_avg_w,
+            "charge_mah": self.charge_mah,
+            "energy_wh": self.energy_wh,
             "die_temp_c": self.die_temp_c,
             "status": self.status,
             "overload": int(self.overload),
