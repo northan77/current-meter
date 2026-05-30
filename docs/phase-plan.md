@@ -1,514 +1,243 @@
-Pre Phase work: Setup Pi Zero 2 W
+# Current Meter Project Phase Plan
 
-Task.
+## Completed Phases
 
-Load Pi Lite OS 64.
+### Phase 0: Requirements and Hardware Baseline
 
-Configure name and SSH into via VS Code. Done: `ssh tim@labpi.local`, IP = `192.168.0.63`, configured static in router.
+Completed.
 
-Create folder for project and current-meter. Done.
+### Phase 1: Platform Bring Up and INA228 Validation
 
-Create `INA228_test.py` file ready for next phase. Done.
+Completed.
 
-# Phase 0: Requirements Freeze
+Includes:
 
-## Objective
+- Raspberry Pi setup
+- Git integration
+- INA228 communications
+- Calibration system
+- Statistics engine
+- Measurement validation
+- CSV logging foundation
 
-Lock down the hardware assumptions before any software development.
+### Phase 2: Dashboard and Battery Metrics
 
-### Tasks
+Completed.
 
-#### 0.1 Confirm INA228 module
+Includes:
 
-Record:
+- Flask dashboard
+- Live API
+- Current, voltage and power display
+- Statistics display
+- CSV download
+- Runtime metrics
+- Battery discharge estimation
+- Used capacity calculations
+- Remaining capacity calculations
+- Runtime prediction
 
-- Manufacturer
-- Module link
-- INA228 I2C address
-- Fitted shunt value
-- Maximum practical current
+See:
 
-#### 0.2 Define measurement targets
+docs/phase-results/phase-2-dashboard.md
 
-Example:
+---
 
-| Range     | Target       |
-| --------- | ------------ |
-| Current   | 1 µA to 1 A  |
-| Voltage   | 0 V to 36 V  |
-| Power     | Derived      |
-| Logging   | 1 Hz minimum |
-| Dashboard | 2 to 10 Hz   |
-
-#### 0.3 Define acceptance criteria
-
-Example:
-
-- Current within ±2%
-- Voltage within ±1%
-- Stable zero reading
-- mAh integration verified
-
-**Deliverable:** Frozen specification and hardware baseline.
-
-------
-
-# Phase 1: Raspberry Pi Platform Bring-Up
+# Phase 3: Measurement Robustness
 
 ## Objective
 
-Get a stable Pi environment.
+Ensure the instrument can run unattended for long periods.
 
 ### Tasks
 
-### 1.1 Install OS
-
-- Raspberry Pi OS Lite
-- Hostname:
-  - `currentmeter`
-- Static or DHCP address
-
-### 1.2 Enable services
-
-- SSH
-- I2C
-
-Verify:
-
-```text
-ssh currentmeter.local
-```
-
-and
-
-```text
-i2cdetect -y 1
-```
-
-### 1.3 Create project structure
-
-```text
-/home/tim/current_meter
-```
-
-Exactly as defined in the specification.
-
-### 1.4 Git repository
-
-Strongly recommended.
-
-Even if local only.
-
-**Deliverable:** Pi accessible over WiFi and SSH.
-
-------
-
-# Phase 2: INA228 Driver Development
-
-## Objective
-
-Trustworthy sensor readings.
-
-### Tasks
-
-### 2.1 Read raw registers
-
-Verify:
-
-- Bus voltage
-- Shunt voltage
-- Current
-- Power
-
-No web dashboard yet.
-
-Just terminal output.
-
-### 2.2 Implement conversion maths
-
-Build:
-
-```text
-ina228.py
-```
-
-Functions:
-
-```text
-read_voltage()
-read_current()
-read_power()
-read_temperature()
-```
-
-### 2.3 Validate against instruments
-
-Test:
-
-- Open circuit
-- Known resistor
-- Bench PSU
-- Known current source
-
-### 2.4 Implement calibration
-
-Support:
-
-- Current multiplier
-- Voltage multiplier
-- Zero offset
-
-Stored in:
-
-```text
-config.yaml
-```
-
-### 2.5 Statistics engine
-
-Track:
-
-- Min
-- Max
-- Average
-- Rolling average
-
-**Deliverable:** Trustworthy measurements from terminal.
-
-------
-
-# Phase 3: Measurement Engine
-
-## Objective
-
-Create the core measurement service.
-
-### Tasks
-
-### 3.1 Background sampling thread
-
-Runs continuously.
-
-Example:
-
-```text
-10Hz
-50Hz
-100Hz
-```
-
-Selectable.
-
-### 3.2 Shared state object
-
-Contains:
-
-- Latest current
-- Voltage
-- Power
-- Statistics
-- Status
-
-### 3.3 mAh integration
-
-Calculate:
-
-```text
-Current × Time
-```
-
-### 3.4 Wh integration
-
-Calculate:
-
-```text
-Power × Time
-```
-
-### 3.5 Error handling
+#### 3.1 INA228 fault detection
 
 Detect:
 
-- INA228 missing
-- I2C failure
-- Invalid data
+- Sensor disconnected
+- Invalid readings
+- Communication timeout
 
-**Deliverable:** Headless measurement engine.
+#### 3.2 I2C recovery
 
-------
+Recover from:
 
-# Phase 4: Flask Dashboard
+- Bus lockups
+- Read failures
+- Temporary communication errors
 
-## Objective
+#### 3.3 Sensor offline mode
 
-Get live data visible.
-
-### Tasks
-
-### 4.1 Flask server
-
-Create:
-
-```text
-/
-```
-
-Dashboard
-
-```text
-/api/live
-```
-
-JSON endpoint
-
-### 4.2 Live dashboard
+Dashboard remains operational when measurement hardware is unavailable.
 
 Display:
 
-- Current
-- Voltage
-- Power
-- Min
-- Max
-- Average
-- mAh
-- Wh
+- Offline state
+- Error reason
+- Recovery attempts
 
-### 4.3 Status indicators
+#### 3.4 Automatic reconnection
 
-Show:
+Automatically reconnect when the sensor returns.
 
-- Logging active
-- INA228 online
-- Sample rate
+#### 3.5 Long duration soak testing
 
-### 4.4 Auto refresh
+Verify:
 
-Polling:
+- Stability
+- Memory usage
+- Measurement continuity
+- Recovery behaviour
 
-```text
-2Hz to 10Hz
-```
+### Deliverable
 
-Exactly as specified.
+Reliable unattended operation.
 
-**Deliverable:** Live browser dashboard.
+---
 
-------
-
-# Phase 5: Configuration System
+# Phase 4: Visualisation
 
 ## Objective
 
-Allow operation without SSH.
+Transform the dashboard into a practical engineering instrument.
 
 ### Tasks
 
-### 5.1 Config editor
+#### 4.1 Current graph
+
+Live scrolling current graph.
+
+#### 4.2 Power graph
+
+Live scrolling power graph.
+
+#### 4.3 Voltage graph
+
+Live scrolling voltage graph.
+
+#### 4.4 Time ranges
+
+Selectable ranges:
+
+- 1 minute
+- 5 minutes
+- 30 minutes
+- Entire run
+
+#### 4.5 Historical buffers
+
+Maintain local history buffers for visualisation.
+
+### Deliverable
+
+Graphical dashboard with live trends.
+
+---
+
+# Phase 5: Instrument Controls
+
+## Objective
+
+Allow operation without editing files or using SSH.
+
+### Tasks
+
+#### 5.1 Start logging
+
+#### 5.2 Stop logging
+
+#### 5.3 New run
+
+Timestamped run creation.
+
+#### 5.4 Zero current
+
+Capture and store offset.
+
+#### 5.5 Configuration page
 
 Modify:
 
-- Shunt value
-- Multipliers
-- Offset
-- Rates
+- Sample rates
+- Rolling averages
+- Calibration values
+- Battery capacity
 
-### 5.2 Save settings
+#### 5.6 Save settings
 
-Write:
+Persist settings through the web interface.
 
-```text
-config.yaml
-```
+### Deliverable
 
-### 5.3 Zero current button
+Fully controllable bench instrument.
 
-Button:
+---
 
-```text
-Zero Offset
-```
-
-Captures current reading.
-
-Stores offset.
-
-### 5.4 Reset statistics
-
-Reset:
-
-- Min
-- Max
-- Average
-- mAh
-- Wh
-
-**Deliverable:** Fully configurable meter.
-
-------
-
-# Phase 6: Logging System
+# Phase 6: Battery Characterisation
 
 ## Objective
 
-Capture useful test data.
+Characterise batteries rather than simply measuring current.
 
 ### Tasks
 
-### 6.1 CSV logger
+#### 6.1 Battery profiles
 
-Implement:
+Store battery definitions.
 
-```text
-logger.py
-```
+#### 6.2 Capacity validation
 
-### 6.2 Run management
+Compare measured and claimed capacity.
 
-Create:
+#### 6.3 Charge cycle logging
 
-```text
-logs/
-    run_20260529_120000.csv
-```
+#### 6.4 Discharge cycle logging
 
-### 6.3 Download support
+#### 6.5 Runtime prediction
 
-Browser download.
+#### 6.6 Battery health estimation
 
-### 6.4 Verify timestamps
+Calculate:
 
-Check:
+- Measured capacity
+- Remaining health
+- Historical degradation
 
-- Missing samples
-- Sample spacing
+### Deliverable
 
-**Deliverable:** Reliable logging.
+Battery characterisation platform.
 
-------
+---
 
-# Phase 7: Systemd Integration
+# Phase 7: Deployment
 
 ## Objective
 
-Appliance-style operation.
+Create appliance style operation.
 
 ### Tasks
 
-### 7.1 Create service
+#### 7.1 Systemd service
 
-```text
-current_meter.service
-```
+#### 7.2 Automatic startup
 
-### 7.2 Auto-start
+#### 7.3 Automatic recovery
 
-Verify:
+#### 7.4 Watchdog support
 
-```text
-reboot
-```
+#### 7.5 Deployment documentation
 
-Dashboard returns automatically.
+### Deliverable
 
-### 7.3 Recovery
+Production ready instrument.
 
-Test:
+---
 
-```text
-kill -9
-```
+# Current Priority Order
 
-Ensure restart.
-
-### 7.4 Journal logging
-
-Verify:
-
-```text
-journalctl -u current_meter
-```
-
-**Deliverable:** Production-ready operation.
-
-------
-
-# Phase 8: Validation and Calibration
-
-## Objective
-
-Prove measurements can be trusted.
-
-### Tasks
-
-### 8.1 Open-circuit test
-
-Expected:
-
-```text
-0 A
-```
-
-or stable offset.
-
-### 8.2 Resistor loads
-
-Use:
-
-- 1kΩ
-- 100Ω
-- 10Ω
-
-Known currents.
-
-### 8.3 Battery test
-
-Run:
-
-- Small LiPo
-- ESP32 device
-
-Verify:
-
-- mAh
-- Wh
-
-### 8.4 Long-duration test
-
-24-hour logging.
-
-Check:
-
-- Drift
-- Stability
-- Memory leaks
-
-**Deliverable:** Signed-off Version 1.
-
-------
-
-# Phase 9: Version 1 Release
-
-## Success Criteria
-
-You should be able to:
-
-1. Power the Pi.
-2. Connect to WiFi.
-3. Browse to `currentmeter.local`.
-4. See live current, voltage and power.
-5. Start logging.
-6. Download a CSV.
-7. Trust the readings.
-
-At that point, stop.
-
-Only after that start Version 2 features such as:
-
-- Live graphs
-- SQLite
-- Battery discharge mode
-- Trigger capture
-- Multiple profiles
-- Multiple INA228 boards
-- Sleep current analysis
+1. Phase 3 Measurement Robustness
+2. Phase 4 Visualisation
+3. Phase 5 Instrument Controls
+4. Phase 6 Battery Characterisation
+5. Phase 7 Deployment
