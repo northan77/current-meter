@@ -1,0 +1,30 @@
+# Current Meter Phase 0 configuration
+# Update these after checking the actual INA228 module markings and documentation.
+
+hardware:
+  manufacturer: "TODO"
+  module_link: "TODO"
+  notes: "Ready-made INA228 module. Treat as fixed hardware. Do not assume precision layout."
+
+i2c:
+  bus: 1
+  address: 0x40
+
+shunt:
+  resistance_ohms: 0.015
+  max_current_a: 10
+
+calibration:
+  current_multiplier: 1.0
+  voltage_multiplier: 1.0
+  current_zero_offset_a: 0.0
+
+sampling:
+  samples: 20
+  delay_s: 0.1
+
+acceptance:
+  current_accuracy_percent: 2.0
+  voltage_accuracy_percent: 1.0
+  stable_zero_reading: true
+  mah_integration_verified: false
