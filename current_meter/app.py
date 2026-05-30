@@ -45,7 +45,7 @@ HTML = """
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 14px;
-      max-width: 1100px;
+      max-width: 1220px;
     }
     .card {
       background: #182028;
@@ -104,7 +104,12 @@ HTML = """
     <div class="card"><div class="label">Rolling average</div><div id="rolling" class="value">...</div></div>
     <div class="card"><div class="label">Min current</div><div id="min" class="value">...</div></div>
     <div class="card"><div class="label">Max current</div><div id="max" class="value">...</div></div>
-    <div class="card"><div class="label">Charge</div><div id="mah" class="value">...</div></div>
+    <div class="card"><div class="label">Used capacity</div><div id="used" class="value">...</div><div id="expected" class="small"></div></div>
+    <div class="card"><div class="label">Remaining capacity</div><div id="remaining" class="value">...</div></div>
+    <div class="card"><div class="label">Remaining capacity</div><div id="remainingPct" class="value">...</div></div>
+    <div class="card"><div class="label">Runtime elapsed</div><div id="elapsed" class="value">...</div></div>
+    <div class="card"><div class="label">Runtime remaining</div><div id="runtimeRemaining" class="value">...</div></div>
+    <div class="card"><div class="label">Estimated total runtime</div><div id="runtimeTotal" class="value">...</div></div>
     <div class="card"><div class="label">Energy</div><div id="wh" class="value">...</div></div>
     <div class="card"><div class="label">Temperature</div><div id="temp" class="value">...</div></div>
     <div class="card"><div class="label">Status</div><div id="status" class="value">...</div><div id="detail" class="small"></div></div>
@@ -121,6 +126,21 @@ HTML = """
       if (abs < 0.001) return (a * 1000000).toFixed(1) + " uA";
       if (abs < 1) return (a * 1000).toFixed(3) + " mA";
       return a.toFixed(6) + " A";
+    }
+
+    function fmtDuration(seconds) {
+      if (!Number.isFinite(seconds) || seconds <= 0) return "n/a";
+      const totalSeconds = Math.round(seconds);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const secs = totalSeconds % 60;
+      if (hours > 0) return hours + " h " + minutes + " min";
+      if (minutes > 0) return minutes + " min " + secs + " s";
+      return secs + " s";
+    }
+
+    function fmtMah(value) {
+      return value.toFixed(3) + " mAh";
     }
 
     function setText(id, text) {
@@ -140,7 +160,13 @@ HTML = """
         setText("rolling", fmtCurrent(data.current_rolling_avg_a));
         setText("min", fmtCurrent(data.current_min_a));
         setText("max", fmtCurrent(data.current_max_a));
-        setText("mah", data.charge_mah.toFixed(6) + " mAh");
+        setText("used", fmtMah(data.used_capacity_mah));
+        setText("expected", "Expected " + fmtMah(data.expected_capacity_mah));
+        setText("remaining", fmtMah(data.remaining_capacity_mah));
+        setText("remainingPct", data.remaining_capacity_percent.toFixed(1) + " %");
+        setText("elapsed", fmtDuration(data.elapsed_s));
+        setText("runtimeRemaining", fmtDuration(data.runtime_remaining_s));
+        setText("runtimeTotal", fmtDuration(data.runtime_total_s));
         setText("wh", data.energy_wh.toFixed(9) + " Wh");
         setText("temp", data.die_temp_c.toFixed(2) + " °C");
         setText("status", data.status);
@@ -183,6 +209,12 @@ class DashboardState:
     power_avg_w: float = 0.0
     charge_mah: float = 0.0
     energy_wh: float = 0.0
+    expected_capacity_mah: float = 0.0
+    used_capacity_mah: float = 0.0
+    remaining_capacity_mah: float = 0.0
+    remaining_capacity_percent: float = 0.0
+    runtime_remaining_s: float = 0.0
+    runtime_total_s: float = 0.0
     die_temp_c: float = 0.0
     status: str = "starting"
     overload: bool = False
@@ -222,6 +254,35 @@ class MeasurementEngine:
         with LOGGER_CONFIG_PATH.open("r", encoding="utf-8") as f:
             return yaml.safe_load(f) or {}
 
+    @staticmethod
+    def _battery_metrics(
+        charge_mah: float,
+        current_avg_a: float,
+        expected_capacity_mah: float,
+    ) -> dict[str, float]:
+        used_capacity_mah = max(0.0, charge_mah)
+        remaining_capacity_mah = max(0.0, expected_capacity_mah - used_capacity_mah)
+
+        remaining_capacity_percent = 0.0
+        if expected_capacity_mah > 0:
+            remaining_capacity_percent = (remaining_capacity_mah / expected_capacity_mah) * 100.0
+
+        average_current_ma = abs(current_avg_a) * 1000.0
+        runtime_remaining_s = 0.0
+        runtime_total_s = 0.0
+
+        if average_current_ma > 0:
+            runtime_remaining_s = (remaining_capacity_mah / average_current_ma) * 3600.0
+            runtime_total_s = (expected_capacity_mah / average_current_ma) * 3600.0
+
+        return {
+            "used_capacity_mah": used_capacity_mah,
+            "remaining_capacity_mah": remaining_capacity_mah,
+            "remaining_capacity_percent": remaining_capacity_percent,
+            "runtime_remaining_s": runtime_remaining_s,
+            "runtime_total_s": runtime_total_s,
+        }
+
     def _run(self) -> None:
         cfg = load_config()
         logger_cfg = self._load_logger_config()
@@ -232,6 +293,10 @@ class MeasurementEngine:
         logging_enabled = bool(logger_cfg.get("logging", {}).get("enabled", True))
         rolling_window = int(logger_cfg.get("logging", {}).get("rolling_average_samples", 20))
         rolling_window = max(1, rolling_window)
+
+        expected_capacity_mah = float(
+            logger_cfg.get("battery", {}).get("expected_capacity_mah", 400.0)
+        )
 
         warning_current_a = float(logger_cfg.get("limits", {}).get("warning_current_a", 8.0))
         overload_current_a = float(logger_cfg.get("limits", {}).get("overload_current_a", 10.0))
@@ -313,6 +378,11 @@ class MeasurementEngine:
 
                     charge_mah += current_a * (dt_s / 3600.0) * 1000.0
                     energy_wh += power_w * (dt_s / 3600.0)
+                    battery_metrics = self._battery_metrics(
+                        charge_mah=charge_mah,
+                        current_avg_a=current_avg_a,
+                        expected_capacity_mah=expected_capacity_mah,
+                    )
 
                     measurement = Measurement.from_ina228_sample(
                         sample,
@@ -347,6 +417,12 @@ class MeasurementEngine:
                             power_avg_w=measurement.power_avg_w,
                             charge_mah=measurement.charge_mah,
                             energy_wh=measurement.energy_wh,
+                            expected_capacity_mah=expected_capacity_mah,
+                            used_capacity_mah=battery_metrics["used_capacity_mah"],
+                            remaining_capacity_mah=battery_metrics["remaining_capacity_mah"],
+                            remaining_capacity_percent=battery_metrics["remaining_capacity_percent"],
+                            runtime_remaining_s=battery_metrics["runtime_remaining_s"],
+                            runtime_total_s=battery_metrics["runtime_total_s"],
                             die_temp_c=measurement.die_temp_c,
                             status=measurement.status,
                             overload=measurement.overload,
