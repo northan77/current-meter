@@ -78,6 +78,42 @@ h1 {
   gap: 10px;
 }
 
+.graphs {
+  max-width: 1220px;
+  margin-top: 20px;
+}
+
+.range-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.range-button.active {
+  background: #3a5268;
+  border-color: #6f91ad;
+}
+
+.graph-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.graph-panel {
+  background: #182028;
+  border: 1px solid #2d3a45;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 180px;
+}
+
 a,
 button {
   background: #24313d;

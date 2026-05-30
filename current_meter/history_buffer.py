@@ -43,11 +43,16 @@ class HistoryBuffer:
         with self.lock:
             self.samples.clear()
 
-    def snapshot(self) -> dict[str, Any]:
+    def snapshot(self, range_s: float | None = None) -> dict[str, Any]:
         with self.lock:
-            samples = [asdict(sample) for sample in self.samples]
+            samples = list(self.samples)
+
+        if range_s is not None and samples:
+            end_elapsed_s = samples[-1].elapsed_s
+            start_elapsed_s = max(0.0, end_elapsed_s - range_s)
+            samples = [sample for sample in samples if sample.elapsed_s >= start_elapsed_s]
 
         return {
             "count": len(samples),
-            "samples": samples,
+            "samples": [asdict(sample) for sample in samples],
         }

@@ -34,6 +34,30 @@
     <a href="/download/csv">Download CSV</a>
   </div>
 
+  <section class="graphs">
+    <div class="range-controls" role="group" aria-label="Graph time range">
+      <button type="button" class="range-button active" data-range="60">1 min</button>
+      <button type="button" class="range-button" data-range="300">5 min</button>
+      <button type="button" class="range-button" data-range="1800">30 min</button>
+      <button type="button" class="range-button" data-range="all">Entire run</button>
+    </div>
+
+    <div class="graph-grid">
+      <div class="graph-panel">
+        <div class="label">Current</div>
+        <canvas id="currentGraph" height="180"></canvas>
+      </div>
+      <div class="graph-panel">
+        <div class="label">Power</div>
+        <canvas id="powerGraph" height="180"></canvas>
+      </div>
+      <div class="graph-panel">
+        <div class="label">Bus voltage</div>
+        <canvas id="voltageGraph" height="180"></canvas>
+      </div>
+    </div>
+  </section>
+
   <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
 </body>
 </html>

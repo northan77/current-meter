@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from flask import Flask, jsonify, redirect, render_template, send_file, url_for
+from flask import Flask, jsonify, redirect, render_template, request, send_file, url_for
 
 from config import ROOT
 from measurement_engine import MeasurementEngine
@@ -20,6 +20,19 @@ def index():
 @app.route("/api/live")
 def api_live():
     return jsonify(engine.snapshot())
+
+
+@app.route("/api/history")
+def api_history():
+    range_arg = request.args.get("range", "all")
+    ranges = {
+        "60": 60.0,
+        "300": 300.0,
+        "1800": 1800.0,
+        "all": None,
+    }
+    range_s = ranges.get(range_arg, None)
+    return jsonify(engine.history_snapshot(range_s=range_s))
 
 
 @app.route("/api/reset", methods=["POST"])

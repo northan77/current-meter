@@ -14,6 +14,7 @@ import yaml
 from config import ROOT, load_config, parse_i2c_address
 from csv_logger import CsvLogger
 from dashboard_state import DashboardState
+from history_buffer import HistoryBuffer
 from ina228 import INA228
 from measurement import Measurement
 
@@ -27,6 +28,7 @@ class MeasurementEngine:
         self.stop_event = threading.Event()
         self.thread: threading.Thread | None = None
         self.reset_requested = False
+        self.history = HistoryBuffer()
 
     def start(self) -> None:
         if self.thread and self.thread.is_alive():
@@ -41,6 +43,9 @@ class MeasurementEngine:
     def snapshot(self) -> dict[str, Any]:
         with self.lock:
             return asdict(self.state)
+
+    def history_snapshot(self, range_s: float | None = None) -> dict[str, Any]:
+        return self.history.snapshot(range_s=range_s)
 
     def load_logger_config(self) -> dict[str, Any]:
         if not LOGGER_CONFIG_PATH.exists():
@@ -139,6 +144,7 @@ class MeasurementEngine:
             self.reset_requested = False
 
         rolling_currents.clear()
+        self.history.clear()
         return True, {
             "sample_count": 0,
             "charge_mah": 0.0,
@@ -309,6 +315,13 @@ class MeasurementEngine:
                 power_avg_w=power_avg_w,
                 charge_mah=charge_mah,
                 energy_wh=energy_wh,
+            )
+            self.history.append(
+                timestamp_utc=measurement.timestamp_utc,
+                elapsed_s=measurement.elapsed_s,
+                current_a=measurement.current_a,
+                power_w=measurement.power_w,
+                bus_v=measurement.bus_v,
             )
 
             row = measurement.as_csv_row()

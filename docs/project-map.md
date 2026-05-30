@@ -9,7 +9,7 @@ Phase 1 complete
 Phase 2 complete
 Phase 3 complete
 Phase 4 preparation complete
-Phase 4 implementation next
+Phase 4 implementation complete
 
 ## Main Files
 
@@ -53,7 +53,7 @@ Frontend update loop and reset button handling.
 /api/reset Reset run statistics
 /download/csv Download CSV log
 
-## Phase 4 Next Steps
+## Phase 4 Implemented
 
 1. Add current_meter/history_buffer.py for bounded current, power and voltage history.
 2. Extend measurement_engine.py to append valid samples to the history buffer.
